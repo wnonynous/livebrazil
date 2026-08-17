@@ -1,0 +1,11 @@
+{
+  "host": "127.0.0.1",
+  "port": 28471,
+  "vpnConnectionName": "VoiceRoute Canada",
+  "disconnectDelay": 0,
+  "requestTimeout": 15000,
+  "discordChannel": "stable",
+  "discordSessionTimeout": 60000,
+  "sessionStabilizationDelay": 5000,
+  "debug": true
+}

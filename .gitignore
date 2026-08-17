@@ -1,0 +1,10 @@
+node_modules/
+config/config.json
+data/auth-token.txt
+helper/config/config.json
+helper/data/auth-token.txt
+logs/
+*.log
+.env
+helper/dist/
+helper/.build/

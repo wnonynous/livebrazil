@@ -1,0 +1,17 @@
+{
+  "name": "livebrazil-helper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Helper localhost para controlar uma VPN nativa do Windows.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "launch": "node src/launcher.js",
+    "build:exe": "node scripts/build-portable.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
