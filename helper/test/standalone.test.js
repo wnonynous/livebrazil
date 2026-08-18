@@ -7,6 +7,8 @@ const path = require('node:path');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'standalone', 'LiveBrazil.ps1'), 'utf8');
 const buildSource = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'build-portable.js'), 'utf8');
+const launchSource = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'launch-portable.js'), 'utf8');
+const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 const iconPath = path.join(__dirname, '..', 'standalone', 'assets', '6dae0b010e42f9fa0a59cb489c97ff32.png');
 
 test('standalone contém somente o perfil VPN fixo solicitado', () => {
@@ -78,4 +80,13 @@ test('standalone incorpora o ícone e força UTF-8 com BOM no pacote', () => {
   assert.match(source, /6dae0b010e42f9fa0a59cb489c97ff32\.png/);
   assert.match(buildSource, /`\\uFEFF\$\{source\}`/);
   assert.match(buildSource, /FILE1=.*iconName/);
+});
+
+test('npm run launch usa o mesmo fluxo standalone do executável', () => {
+  assert.equal(packageJson.scripts.launch, 'node scripts/launch-portable.js');
+  assert.equal(packageJson.scripts['launch:node'], 'node src/launcher.js');
+  assert.match(launchSource, /spawnSync\('powershell\.exe'/);
+  assert.match(launchSource, /`\\uFEFF\$\{source\}`/);
+  assert.match(launchSource, /fs\.copyFileSync\(iconFile/);
+  assert.match(launchSource, /-File', stagedScript/);
 });

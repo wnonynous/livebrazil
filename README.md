@@ -7,7 +7,7 @@
 
   [![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11&logoColor=white)](#-requisitos)
   [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white)](#-compilar-o-executável)
-  [![Testes](https://img.shields.io/badge/testes-22%20aprovados-23A55A)](#-testes)
+  [![Testes](https://img.shields.io/badge/testes-23%20aprovados-23A55A)](#-testes)
   [![Versão](https://img.shields.io/badge/versão-1.0.0-5865F2)](#)
 
   Desenvolvido por **[wnonynous](https://github.com/wnonynous)**
@@ -140,7 +140,8 @@ Comandos disponíveis:
 | Comando | Função |
 |---|---|
 | `npm start` | Inicia a API HTTP localhost |
-| `npm run launch` | Executa o launcher Node configurável |
+| `npm run launch` | Executa o mesmo fluxo automático do `.exe` diretamente do código-fonte |
+| `npm run launch:node` | Executa o launcher Node antigo para uma VPN previamente cadastrada |
 | `npm run dev` | Inicia a API com recarga automática |
 | `npm test` | Executa a suíte de testes |
 | `npm run build:exe` | Gera o executável portátil |
@@ -193,7 +194,7 @@ cd helper
 npm test
 ```
 
-Estado atual: **22 testes aprovados**.
+Estado atual: **23 testes aprovados**.
 
 A suíte cobre:
 
@@ -214,7 +215,7 @@ Build portátil validada:
 |---|---|
 | Formato | IExpress autoextraível |
 | Tamanho aproximado | 731 KB |
-| SHA-256 | `F4AE01CACD2A4802B1880815DCDA573536687A7EB881ECD5136255F985BAEB20` |
+| SHA-256 | `AA179D7B381F357A84632EDFAF38D1CBDB40386DA7E4B2BEB403BA623DD18478` |
 | Assinatura | Não assinada |
 
 O fluxo real não é executado pela suíte automatizada porque fecharia o Discord e alteraria a rota de rede da máquina. O parser PowerShell, o XAML e as regras operacionais são validados separadamente.

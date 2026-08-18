@@ -1,8 +1,23 @@
 # LiveBrazil Helper e Launcher
 
-Serviço Node.js local que controla uma conexão VPN nativa já cadastrada no Windows. Consulte o [README principal](../README.md) para o fluxo completo.
+O comando principal executa o mesmo fluxo automático do aplicativo portátil. A API Node.js e o launcher configurável antigo continuam disponíveis como ferramentas opcionais. Consulte o [README principal](../README.md) para a visão completa.
 
-## Configuração
+## Uso recomendado
+
+```powershell
+npm install
+npm run launch
+```
+
+`npm run launch` prepara uma cópia temporária com BOM UTF-8 e executa o mesmo `standalone/LiveBrazil.ps1` usado pelo `.exe`. Ele solicita UAC, cria o perfil fixo `LiveBrazil`, encerra completamente o Discord, conecta a VPN, confirma a rota, abre uma sessão nova e restaura a rota normal.
+
+Para gerar o arquivo portátil:
+
+```powershell
+npm run build:exe
+```
+
+## Helper Node.js configurável
 
 Copie `config/config.example.json` para `config/config.json`:
 
@@ -22,20 +37,20 @@ Copie `config/config.example.json` para `config/config.json`:
 
 `host` existe para tornar a intenção explícita, mas o código sempre faz bind em `127.0.0.1`. Porta, tempos e nome são validados. O nome nunca é aceito em query string, body ou header.
 
-## Uso
+### Uso da API e do launcher antigo
 
 ```powershell
 npm install
 npm start
 ```
 
-`npm start` inicia somente a API localhost. Para iniciar uma nova sessão do Discord através da VPN e depois restaurar a rota Brasil:
+`npm start` inicia somente a API localhost. Para usar o launcher Node antigo com a VPN definida em `config.json`:
 
 ```powershell
-npm run launch
+npm run launch:node
 ```
 
-O launcher fecha o Discord existente, conecta a VPN, abre o canal configurado, confirma duas amostras de conexão TCP estabelecida, aguarda a estabilização e desliga a VPN. Em falhas, tenta restaurar a rota Brasil; se havia fechado o Discord antes de a VPN conectar, também tenta reabri-lo normalmente.
+Esse modo não cria a VPN e exige que ela já exista no Windows com as credenciais salvas. O launcher fecha o Discord existente, conecta a VPN configurada, abre o canal selecionado, aguarda a estabilização e desliga a VPN.
 
 O token é criado em `data/auth-token.txt`. Não compartilhe nem versione esse arquivo. Logs operacionais ficam em `logs/voiceroute.log` e nunca incluem token ou credenciais.
 
