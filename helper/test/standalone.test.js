@@ -55,8 +55,17 @@ test('standalone exige rota VPN e uma sessão nova visível do Discord', () => {
   assert.match(source, /0\.0\.0\.0\/0/);
   assert.match(source, /128\.0\.0\.0\/1/);
   assert.match(source, /CreationDate -ge \$StartedAfter/);
-  assert.match(source, /\$hasWindow -and \$established\.Count -gt 0/);
+  assert.match(source, /\$snapshot\.HasWindow -and \$snapshot\.EstablishedCount -gt 0/);
   assert.match(source, /\$samples -ge 3/);
+});
+
+test('standalone mantém a VPN durante a inicialização e exige estabilidade de rede', () => {
+  assert.match(source, /\$DiscordMinimumStartupSeconds = 30/);
+  assert.match(source, /\$DiscordNetworkQuietSeconds = 8/);
+  assert.match(source, /Wait-DiscordStabilization -StartedAfter \$launchAt/);
+  assert.match(source, /\$snapshot\.Fingerprint -ne \$lastFingerprint/);
+  assert.match(source, /\$quietForSeconds -ge \$QuietSeconds/);
+  assert.doesNotMatch(source, /Estabilizando por 5 segundos/);
 });
 
 test('standalone não registra credenciais no status', () => {

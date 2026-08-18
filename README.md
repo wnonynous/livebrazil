@@ -47,7 +47,7 @@ flowchart TD
     F -- Sim --> G[Iniciar um novo Discord]
     G --> H{Janela e conexões TCP estáveis?}
     H -- Não --> X
-    H -- Sim --> I[Aguardar 5 segundos]
+    H -- Sim --> I[Aguardar ao menos 30 segundos e estabilidade real da rede]
     I --> J[Desconectar a VPN]
     J --> K[Discord permanece aberto na rota normal]
 ```

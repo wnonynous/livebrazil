@@ -10,6 +10,9 @@ $DiscordRoot = Join-Path $env:LOCALAPPDATA 'Discord'
 $DiscordUpdate = Join-Path $DiscordRoot 'Update.exe'
 $StatusRoot = Join-Path $env:LOCALAPPDATA 'LiveBrazil'
 $StatusPath = Join-Path $StatusRoot 'status.log'
+$DiscordMinimumStartupSeconds = 30
+$DiscordNetworkQuietSeconds = 8
+$DiscordStabilizationTimeoutSeconds = 90
 
 function Write-Status([string]$Message) {
     if (-not (Test-Path -LiteralPath $StatusRoot)) {
@@ -120,25 +123,40 @@ function Start-Discord {
     return $startedAt
 }
 
+function Get-DiscordSessionSnapshot([datetime]$StartedAfter) {
+    $newProcesses = @(Get-DiscordProcesses | Where-Object {
+        $_.Name -ieq 'Discord.exe' -and $_.CreationDate -ge $StartedAfter.AddSeconds(-2)
+    })
+    $ids = @($newProcesses | Select-Object -ExpandProperty ProcessId)
+    $hasWindow = $false
+    foreach ($id in $ids) {
+        try {
+            if ((Get-Process -Id $id -ErrorAction Stop).MainWindowHandle -ne 0) {
+                $hasWindow = $true
+                break
+            }
+        } catch {}
+    }
+    $established = @()
+    if ($ids.Count -gt 0) {
+        $established = @(Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue | Where-Object { $ids -contains $_.OwningProcess })
+    }
+    $fingerprint = (@($established | Sort-Object OwningProcess, RemoteAddress, RemotePort | ForEach-Object {
+        '{0}|{1}|{2}' -f $_.OwningProcess, $_.RemoteAddress, $_.RemotePort
+    }) -join ';')
+    return [pscustomobject]@{
+        HasWindow = $hasWindow
+        EstablishedCount = $established.Count
+        Fingerprint = $fingerprint
+    }
+}
+
 function Wait-DiscordSession([datetime]$StartedAfter, [int]$TimeoutSeconds = 75) {
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     $samples = 0
     do {
-        $newProcesses = @(Get-DiscordProcesses | Where-Object {
-            $_.Name -ieq 'Discord.exe' -and $_.CreationDate -ge $StartedAfter.AddSeconds(-2)
-        })
-        $ids = @($newProcesses | Select-Object -ExpandProperty ProcessId)
-        $hasWindow = $false
-        foreach ($id in $ids) {
-            try {
-                if ((Get-Process -Id $id -ErrorAction Stop).MainWindowHandle -ne 0) { $hasWindow = $true; break }
-            } catch {}
-        }
-        $established = @()
-        if ($ids.Count -gt 0) {
-            $established = @(Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue | Where-Object { $ids -contains $_.OwningProcess })
-        }
-        if ($hasWindow -and $established.Count -gt 0) {
+        $snapshot = Get-DiscordSessionSnapshot -StartedAfter $StartedAfter
+        if ($snapshot.HasWindow -and $snapshot.EstablishedCount -gt 0) {
             $samples++
             if ($samples -ge 3) { return $true }
         } else {
@@ -146,6 +164,45 @@ function Wait-DiscordSession([datetime]$StartedAfter, [int]$TimeoutSeconds = 75)
         }
         Start-Sleep -Seconds 1
     } while ((Get-Date) -lt $deadline)
+    return $false
+}
+
+function Wait-DiscordStabilization(
+    [datetime]$StartedAfter,
+    [int]$MinimumSeconds = $DiscordMinimumStartupSeconds,
+    [int]$QuietSeconds = $DiscordNetworkQuietSeconds,
+    [int]$TimeoutSeconds = $DiscordStabilizationTimeoutSeconds
+) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $minimumReadyAt = $StartedAfter.AddSeconds($MinimumSeconds)
+    $lastFingerprint = $null
+    $lastNetworkChange = Get-Date
+    $lastReportedSecond = -1
+
+    do {
+        $now = Get-Date
+        $snapshot = Get-DiscordSessionSnapshot -StartedAfter $StartedAfter
+        if (-not $snapshot.HasWindow -or $snapshot.EstablishedCount -eq 0) {
+            $lastFingerprint = $null
+            $lastNetworkChange = $now
+        } elseif ($snapshot.Fingerprint -ne $lastFingerprint) {
+            $lastFingerprint = $snapshot.Fingerprint
+            $lastNetworkChange = $now
+        }
+
+        $elapsedSeconds = [Math]::Max(0, [int](($now - $StartedAfter).TotalSeconds))
+        $quietForSeconds = ($now - $lastNetworkChange).TotalSeconds
+        if ($now -ge $minimumReadyAt -and $snapshot.HasWindow -and $snapshot.EstablishedCount -gt 0 -and $quietForSeconds -ge $QuietSeconds) {
+            return $true
+        }
+
+        if ($elapsedSeconds -ge ($lastReportedSecond + 5)) {
+            Write-Status ('Discord carregando pela VPN: {0}s; aguardando estabilidade da rede...' -f $elapsedSeconds)
+            $lastReportedSecond = $elapsedSeconds
+        }
+        Start-Sleep -Seconds 1
+    } while ((Get-Date) -lt $deadline)
+
     return $false
 }
 
@@ -193,8 +250,11 @@ function Run-Workflow {
         if (-not (Wait-DiscordSession -StartedAfter $launchAt -TimeoutSeconds 75)) {
             throw 'O Discord não confirmou uma nova sessão iniciada pela VPN.'
         }
-        Write-Status 'Sessão estabelecida pela VPN. Estabilizando por 5 segundos...'
-        Start-Sleep -Seconds 5
+        Write-Status ('Sessão de rede detectada. Mantendo a VPN por no mínimo {0} segundos desde a abertura...' -f $DiscordMinimumStartupSeconds)
+        if (-not (Wait-DiscordStabilization -StartedAfter $launchAt)) {
+            throw 'O Discord abriu, mas a sessão de rede não estabilizou enquanto a VPN estava conectada.'
+        }
+        Write-Status 'Discord inicializado e com a rede estabilizada pela VPN.'
         Write-Status 'Restaurando a rota Brasil...'
         Disconnect-ManagedVpn
         $vpnConnected = $false
