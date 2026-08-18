@@ -65,19 +65,21 @@ Você pode copiar somente esse `.exe` para outro computador Windows 10/11. O com
 
 Ao abrir o programa:
 
-1. aparece uma interface WPF simples, sem logo ou ícone próprio;
-2. clique em **Preparar VPN e iniciar Discord**;
+1. aparece um splash flutuante compacto, sem moldura ou barra de título, usando a imagem do LiveBrazil como avatar;
+2. o processo começa automaticamente, sem precisar clicar em nenhum botão;
 3. aceite a solicitação do UAC;
-4. o LiveBrazil cria ou atualiza uma conexão global chamada `VPN Japão`;
-5. fecha o Discord aberto, conecta a VPN e inicia uma nova sessão;
-6. confirma a sessão de rede, aguarda cinco segundos e desliga a VPN;
-7. mantém o Discord aberto pela rota Brasil.
+4. o LiveBrazil cria ou atualiza uma conexão global chamada `LiveBrazil`;
+5. encerra toda a árvore de processos instalada dentro da pasta do Discord, conecta a VPN e confirma a rota padrão;
+6. inicia um processo novo do Discord, exige janela aberta e conexões TCP estáveis, aguarda cinco segundos e desliga a VPN;
+7. mostra a conclusão, fecha o splash sozinho e mantém o Discord aberto pela rota Brasil.
+
+Se houver falha, o splash permanece aberto e oferece **Tentar novamente**. O detalhe técnico fica em `%LOCALAPPDATA%\LiveBrazil\status.log`.
 
 Configuração incorporada no executável:
 
 ```text
 Provedor: Windows (interno)
-Conexão: VPN Japão
+Conexão: LiveBrazil
 Servidor: public-vpn-109.opengw.net
 Tipo: L2TP/IPsec com chave pré-compartilhada
 Autenticação: MS-CHAPv2, usuário e senha
@@ -180,10 +182,10 @@ A suíte cobre o fluxo completo do launcher com dependências simuladas, restaur
 
 O launcher real não foi executado automaticamente durante o desenvolvimento porque isso fecharia o Discord desta conversa e alteraria a rota de rede. O caminho do Discord Stable foi validado como existente.
 
-O `.exe` portátil foi gerado pelo IExpress nativo, o script interno passou pelo parser do PowerShell e o artefato final possui este SHA-256:
+O `.exe` portátil foi gerado pelo IExpress nativo, o script interno passou pelo parser do PowerShell, o XAML do splash foi carregado em modo STA e o artefato final possui este SHA-256:
 
 ```text
-4D6A8A39DFCD6F1D7F8C6A5596D6B6B9DBE63DDFBFAEFD2C45991378A7CBCE02
+2ECD626A8189C3CF41E925D25F4AF37973E40E6D335A9F24F30CD4F2ABEFA154
 ```
 
 Para reconstruí-lo:
