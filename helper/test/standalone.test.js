@@ -29,12 +29,21 @@ test('standalone confirma VPN, sessão Discord e restauração', () => {
   assert.match(source, /Rota Brasil restaurada após a falha/);
 });
 
-test('standalone encerra somente a árvore validada da instalação do Discord', () => {
+test('standalone encerra a instalação do Discord mesmo quando o caminho está oculto', () => {
   assert.match(source, /Get-CimInstance Win32_Process/);
+  assert.match(source, /'Discord\.exe', 'DiscordSystemHelper\.exe'/);
+  assert.match(source, /\$knownNames -contains \$_\.Name/);
   assert.match(source, /ExecutablePath\.StartsWith\(\$rootPrefix/);
   assert.match(source, /Stop-Process -Id \$item\.ProcessId -Force -ErrorAction SilentlyContinue/);
   assert.doesNotMatch(source, /taskkill\.exe/);
   assert.match(source, /Discord encerrado por completo/);
+});
+
+test('standalone reinicia o Discord pelo shell normal do usuário', () => {
+  assert.match(source, /New-Object -ComObject Shell\.Application/);
+  assert.match(source, /ShellExecute\(\$DiscordUpdate, '--processStart Discord\.exe'/);
+  assert.match(source, /FinalReleaseComObject\(\$shell\)/);
+  assert.doesNotMatch(source, /Start-Process -FilePath \$DiscordUpdate/);
 });
 
 test('standalone exige rota VPN e uma sessão nova visível do Discord', () => {

@@ -47,7 +47,7 @@ npm run build:exe
 
 O resultado é `dist/LiveBrazil.exe`. A build usa o IExpress que acompanha o Windows para incorporar `standalone/LiveBrazil.ps1` em um único executável. O outro computador não precisa de Node.js nem de arquivos adicionais.
 
-O executável abre um splash flutuante sem moldura, exibe o avatar incorporado e inicia o processo automaticamente. O script é empacotado com BOM UTF-8 para preservar os acentos no Windows PowerShell 5.1. Depois do UAC, cria ou atualiza o perfil global fixo `LiveBrazil`, encerra toda a árvore de processos validada dentro da instalação do Discord, conecta a VPN, confirma a rota padrão, inicia um processo novo do Discord, exige janela e conexões TCP estáveis, restaura a rota Brasil e fecha o splash sozinho. Ele não está assinado digitalmente.
+O executável abre um splash flutuante sem moldura, exibe o avatar incorporado e inicia o processo automaticamente. O script é empacotado com BOM UTF-8 para preservar os acentos no Windows PowerShell 5.1. Depois do UAC, cria ou atualiza o perfil global fixo `LiveBrazil`, encerra os processos da instalação do Discord com fallback por nomes fixos quando o Windows oculta seus caminhos, conecta a VPN, confirma a rota padrão e inicia um processo novo pelo shell normal do usuário. Depois exige janela e conexões TCP estáveis, restaura a rota Brasil e fecha o splash sozinho. Ele não está assinado digitalmente.
 
 ## Endpoints
 

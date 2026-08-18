@@ -69,8 +69,8 @@ Ao abrir o programa:
 2. o processo começa automaticamente, sem precisar clicar em nenhum botão;
 3. aceite a solicitação do UAC;
 4. o LiveBrazil cria ou atualiza uma conexão global chamada `LiveBrazil`;
-5. encerra toda a árvore de processos instalada dentro da pasta do Discord, conecta a VPN e confirma a rota padrão;
-6. inicia um processo novo do Discord, exige janela aberta e conexões TCP estáveis, aguarda cinco segundos e desliga a VPN;
+5. encerra os processos da pasta do Discord e usa nomes fixos como fallback quando o Windows oculta o caminho, conecta a VPN e confirma a rota padrão;
+6. inicia um processo novo pelo shell normal do usuário, exige janela aberta e conexões TCP estáveis, aguarda cinco segundos e desliga a VPN;
 7. mostra a conclusão, fecha o splash sozinho e mantém o Discord aberto pela rota Brasil.
 
 Se houver falha, o splash permanece aberto e oferece **Tentar novamente**. O detalhe técnico fica em `%LOCALAPPDATA%\LiveBrazil\status.log`.
@@ -185,7 +185,7 @@ O launcher real não foi executado automaticamente durante o desenvolvimento por
 O `.exe` portátil foi gerado pelo IExpress nativo, o script interno passou pelo parser do PowerShell, o XAML do splash foi carregado em modo STA e o artefato final possui este SHA-256:
 
 ```text
-2ECD626A8189C3CF41E925D25F4AF37973E40E6D335A9F24F30CD4F2ABEFA154
+F4AE01CACD2A4802B1880815DCDA573536687A7EB881ECD5136255F985BAEB20
 ```
 
 Para reconstruí-lo:

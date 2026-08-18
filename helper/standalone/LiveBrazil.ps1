@@ -72,8 +72,10 @@ function Provision-Vpn {
 
 function Get-DiscordProcesses {
     $rootPrefix = [IO.Path]::GetFullPath($DiscordRoot).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    $knownNames = @('Discord.exe', 'DiscordSystemHelper.exe')
     @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-        $_.ExecutablePath -and $_.ExecutablePath.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase)
+        ($knownNames -contains $_.Name) -or
+        ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase))
     })
 }
 
@@ -81,6 +83,7 @@ function Stop-Discord {
     $items = @(Get-DiscordProcesses)
     if ($items.Count -eq 0) { return $false }
     Write-Status 'Encerrando completamente o Discord...'
+    Write-Status ('Processos do Discord detectados: {0}.' -f $items.Count)
     foreach ($item in $items) {
         try {
             $process = Get-Process -Id $item.ProcessId -ErrorAction Stop
@@ -108,7 +111,12 @@ function Start-Discord {
         throw 'Discord Stable não foi encontrado em LOCALAPPDATA.'
     }
     $startedAt = Get-Date
-    Start-Process -FilePath $DiscordUpdate -ArgumentList '--processStart', 'Discord.exe' -WorkingDirectory $DiscordRoot
+    $shell = New-Object -ComObject Shell.Application
+    try {
+        $shell.ShellExecute($DiscordUpdate, '--processStart Discord.exe', $DiscordRoot, 'open', 1)
+    } finally {
+        if ($shell) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
+    }
     return $startedAt
 }
 
